@@ -20,6 +20,7 @@ limitations under the License.
 #include <memory>
 #include <vector>
 
+#include "tensorflow/core/util/env_var.h"
 #include "absl/container/flat_hash_map.h"
 #include "tensorflow/core/common_runtime/executor.h"
 #include "tensorflow/core/common_runtime/graph_view.h"
@@ -76,7 +77,15 @@ class ImmutableExecutorState {
 
   explicit ImmutableExecutorState(const LocalExecutorParams& p,
                                   std::unique_ptr<const Graph> g)
-      : params_(p), gview_(), graph_(std::move(g)) {}
+      : params_(p), gview_(), graph_(std::move(g)) {
+    Status s = ReadInt64FromEnvVar(
+        "COST_MODEL_QUOTA", 50000, &cost_model_quota_);
+    if (!s.ok()) {
+      LOG(FATAL) << "Read COST_MODEL_QUOTA envrionment error. "
+                 << s.error_message();
+    }
+    LOG(INFO) << "COST_MODEL_QUOTA is " << cost_model_quota_;
+  }
   ~ImmutableExecutorState();
 
   Status Initialize();
@@ -100,6 +109,8 @@ class ImmutableExecutorState {
     DCHECK(node_item.is_enter);
     return *enter_frame_info_[node_item.node_id];
   }
+
+  int64 cost_model_quota() const { return cost_model_quota_; }
 
   bool requires_control_flow_support() const { return requires_control_flow_; }
 
@@ -157,6 +168,8 @@ class ImmutableExecutorState {
 
   // Shallow copies of the constant tensors used in the graph.
   std::vector<Tensor> const_tensors_;
+
+  int64 cost_model_quota_ = 50000; // 50us
 
   TF_DISALLOW_COPY_AND_ASSIGN(ImmutableExecutorState);
 };

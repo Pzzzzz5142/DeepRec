@@ -403,12 +403,25 @@ DirectSession::DirectSession(const SessionOptions& options,
     MemoryPlannerFactory::GetMemoryPlanner()->SetThreadPool(GlobalThreadPool(options));
   }
 
+  bool use_cost_model_executor = false;
+  bool use_inline_executor = false;
+  Status s =
+      ReadBoolFromEnvVar("USE_COST_MODEL_EXECUTOR", false, &use_cost_model_executor);
+  if (!s.ok()) {
+    LOG(FATAL) << s.error_message();
+  }
+  s =
+      ReadBoolFromEnvVar("USE_INLINE_EXECUTOR", false, &use_inline_executor);
+  if (!s.ok()) {
+    LOG(FATAL) << s.error_message();
+  }
+
   // Select which executor to use
   if (options_.config.executor_policy() ==
-      ExecutorPolicy::USE_COST_MODEL_EXECUTOR) {
+      ExecutorPolicy::USE_COST_MODEL_EXECUTOR || use_cost_model_executor) {
     run_cost_model_executor_ = true;
   } else if (options_.config.executor_policy() ==
-             ExecutorPolicy::USE_INLINE_EXECUTOR) {
+             ExecutorPolicy::USE_INLINE_EXECUTOR || use_inline_executor) {
     run_in_caller_thread_ = true;
   }
 

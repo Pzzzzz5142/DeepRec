@@ -322,6 +322,10 @@ class ExecutorState {
 
   void MaybeCollectKernelStats();
 
+  int64 CostModelQuota() {
+    return immutable_state_.cost_model_quota();
+  }
+
   // Contains the device context assigned by the device at the beginning of a
   // step.
   DeviceContext* device_context_ = nullptr;
@@ -1558,7 +1562,8 @@ void CostExecutorState<PropagatorStateType>::CostScheduleReady(
 
     // TODO: FIXME 50us or 100 ops
     // Use cost model here
-    static int quota = 5000;
+    //static int quota = 5000;
+    const int quota = this->CostModelQuota();
     static int max_ops_count = 100;
     int64 batch_ops_cost = 0;
     bool new_batch = false;
