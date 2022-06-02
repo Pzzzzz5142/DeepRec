@@ -49,7 +49,7 @@ cd ../modelzoo/features/AdagradDecayOptimizer/WDL/data
 wget https://storage.googleapis.com/dataset-uploader/criteo-kaggle/large_version/eval.csv
 wget https://storage.googleapis.com/dataset-uploader/criteo-kaggle/large_version/train.csv
 
-python3 train.py > log
+python3 train.py
 
 exit $ret
 
