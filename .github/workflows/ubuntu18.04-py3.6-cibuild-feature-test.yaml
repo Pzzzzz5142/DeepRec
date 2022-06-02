@@ -1,4 +1,4 @@
-name: CPU Contrib Unit Tests
+name: Features test
 
 on: 
   workflow_dispatch:
